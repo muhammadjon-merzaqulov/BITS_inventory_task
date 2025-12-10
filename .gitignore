@@ -12,3 +12,9 @@ db.sqlite3
 # Django static
 staticfiles/
 media/
+
+# Mac system files
+.DS_Store
+
+# Docker build files
+*.pid
