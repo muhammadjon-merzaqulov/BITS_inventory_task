@@ -1,0 +1,115 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }} - Smart Inventory System{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0"><i class="bi bi-truck"></i> {{ title }}</h4>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        {% if form.non_field_errors %}
+                        <div class="alert alert-danger">
+                            {{ form.non_field_errors }}
+                        </div>
+                        {% endif %}
+                        
+                        <div class="row">
+                            <div class="col-md-12 mb-3">
+                                <label for="{{ form.product.id_for_label }}" class="form-label">Product *</label>
+                                {{ form.product }}
+                                {% if form.product.errors %}
+                                <div class="text-danger small">{{ form.product.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.from_warehouse.id_for_label }}" class="form-label">From Warehouse *</label>
+                                {{ form.from_warehouse }}
+                                {% if form.from_warehouse.errors %}
+                                <div class="text-danger small">{{ form.from_warehouse.errors }}</div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.to_warehouse.id_for_label }}" class="form-label">To Warehouse *</label>
+                                {{ form.to_warehouse }}
+                                {% if form.to_warehouse.errors %}
+                                <div class="text-danger small">{{ form.to_warehouse.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.quantity.id_for_label }}" class="form-label">Quantity *</label>
+                                {{ form.quantity }}
+                                {% if form.quantity.errors %}
+                                <div class="text-danger small">{{ form.quantity.errors }}</div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.status.id_for_label }}" class="form-label">Status *</label>
+                                {{ form.status }}
+                                {% if form.status.errors %}
+                                <div class="text-danger small">{{ form.status.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-12 mb-3">
+                                <label for="{{ form.driver.id_for_label }}" class="form-label">Driver</label>
+                                {{ form.driver }}
+                                {% if form.driver.errors %}
+                                <div class="text-danger small">{{ form.driver.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        {% if transfer %}
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.actual_quantity_received.id_for_label }}" class="form-label">Actual Quantity Received</label>
+                                {{ form.actual_quantity_received }}
+                                {% if form.actual_quantity_received.errors %}
+                                <div class="text-danger small">{{ form.actual_quantity_received.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-12 mb-3">
+                                <label for="{{ form.mismatch_reason.id_for_label }}" class="form-label">Mismatch Reason</label>
+                                {{ form.mismatch_reason }}
+                                {% if form.mismatch_reason.errors %}
+                                <div class="text-danger small">{{ form.mismatch_reason.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        <div class="d-flex justify-content-between mt-4">
+                            <a href="{% url 'transfer_list' %}" class="btn btn-secondary">
+                                <i class="bi bi-x-circle"></i> Cancel
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-save"></i> Save Transfer
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

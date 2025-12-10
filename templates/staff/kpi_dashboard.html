@@ -1,0 +1,149 @@
+{% extends 'base.html' %}
+
+{% block title %}KPI Dashboard - Smart Inventory System{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-3">
+        <div class="col-12">
+            <h2><i class="bi bi-graph-up"></i> KPI Dashboard</h2>
+            <p class="text-muted">Performance metrics for {{ current_month|date:"F Y" }}</p>
+        </div>
+    </div>
+    
+    <!-- Overall Statistics -->
+    {% if kpi_stats %}
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <h6 class="card-subtitle mb-2">Total Sales</h6>
+                    <h3 class="card-title">${{ kpi_stats.total_sales|default:0|floatformat:2 }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <h6 class="card-subtitle mb-2">Target Sales</h6>
+                    <h3 class="card-title">${{ kpi_stats.total_target|default:0|floatformat:2 }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <h6 class="card-subtitle mb-2">Average Achievement</h6>
+                    <h3 class="card-title">${{ kpi_stats.avg_achievement|default:0|floatformat:2 }}</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    
+    <!-- Current Month KPIs -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">Current Month Performance</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Staff Member</th>
+                                    <th>Role</th>
+                                    <th>Sales Amount</th>
+                                    <th>Target Sales</th>
+                                    <th>Achievement %</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for kpi in current_kpis %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ kpi.staff.user.get_full_name|default:kpi.staff.user.username }}</strong>
+                                    </td>
+                                    <td><span class="badge bg-secondary">{{ kpi.staff.get_role_display }}</span></td>
+                                    <td>${{ kpi.sales_amount|floatformat:2 }}</td>
+                                    <td>${{ kpi.target_sales|floatformat:2 }}</td>
+                                    <td>
+                                        <div class="progress" style="height: 25px;">
+                                            <div class="progress-bar {% if kpi.is_target_met %}bg-success{% else %}bg-warning{% endif %}" 
+                                                 role="progressbar" 
+                                                 style="width: {% if kpi.achievement_percentage > 100 %}100{% else %}{{ kpi.achievement_percentage }}{% endif %}%"
+                                                 aria-valuenow="{{ kpi.achievement_percentage }}" 
+                                                 aria-valuemin="0" 
+                                                 aria-valuemax="100">
+                                                {{ kpi.achievement_percentage|floatformat:1 }}%
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        {% if kpi.is_target_met %}
+                                        <span class="badge bg-success">Target Met</span>
+                                        {% else %}
+                                        <span class="badge bg-warning text-dark">In Progress</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="6" class="text-center text-muted">
+                                        <i class="bi bi-inbox"></i> No KPI data for current month
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Recent Bonuses -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="bi bi-currency-dollar"></i> Recent Bonuses</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Staff Member</th>
+                                    <th>Month</th>
+                                    <th>Amount</th>
+                                    <th>Reason</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for bonus in recent_bonuses %}
+                                <tr>
+                                    <td>{{ bonus.staff.user.get_full_name|default:bonus.staff.user.username }}</td>
+                                    <td>{{ bonus.month|date:"F Y" }}</td>
+                                    <td class="text-success"><strong>${{ bonus.amount|floatformat:2 }}</strong></td>
+                                    <td>{{ bonus.reason|default:"Performance bonus" }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="4" class="text-center text-muted">
+                                        <i class="bi bi-inbox"></i> No bonuses recorded
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

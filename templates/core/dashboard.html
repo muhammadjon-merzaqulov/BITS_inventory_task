@@ -1,0 +1,188 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard - Smart Inventory System{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="display-6">
+                <i class="bi bi-speedometer2"></i> Dashboard
+            </h1>
+            <p class="text-muted">Welcome, {{ user.get_full_name|default:user.username }} - {{ role_display }}</p>
+        </div>
+    </div>
+    
+    <!-- Summary Cards -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="card dashboard-card bg-primary text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="card-subtitle mb-2">Total Products</h6>
+                            <h2 class="card-title">{{ total_products }}</h2>
+                        </div>
+                        <div>
+                            <i class="bi bi-box-seam fs-1"></i>
+                        </div>
+                    </div>
+                </div>
+                {% if role == 'admin' or role == 'warehouse' %}
+                <div class="card-footer bg-transparent border-0">
+                    <a href="{% url 'product_list' %}" class="text-white text-decoration-none">View Details <i class="bi bi-arrow-right"></i></a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="card dashboard-card bg-success text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="card-subtitle mb-2">Total Customers</h6>
+                            <h2 class="card-title">{{ total_customers }}</h2>
+                        </div>
+                        <div>
+                            <i class="bi bi-people fs-1"></i>
+                        </div>
+                    </div>
+                </div>
+                {% if role == 'admin' or role == 'sales' %}
+                <div class="card-footer bg-transparent border-0">
+                    <a href="{% url 'customer_list' %}" class="text-white text-decoration-none">View Details <i class="bi bi-arrow-right"></i></a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="card dashboard-card bg-info text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="card-subtitle mb-2">Today's Sales</h6>
+                            <h2 class="card-title">${{ today_sales|floatformat:2 }}</h2>
+                            <small>{{ today_invoice_count }} Invoice(s)</small>
+                        </div>
+                        <div>
+                            <i class="bi bi-currency-dollar fs-1"></i>
+                        </div>
+                    </div>
+                </div>
+                {% if role == 'admin' or role == 'sales' or role == 'accountant' %}
+                <div class="card-footer bg-transparent border-0">
+                    <a href="{% url 'invoice_list' %}" class="text-white text-decoration-none">View Details <i class="bi bi-arrow-right"></i></a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="card dashboard-card bg-warning text-dark">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="card-subtitle mb-2">Pending Transfers</h6>
+                            <h2 class="card-title">{{ pending_transfers }}</h2>
+                        </div>
+                        <div>
+                            <i class="bi bi-truck fs-1"></i>
+                        </div>
+                    </div>
+                </div>
+                {% if role == 'admin' or role == 'warehouse' %}
+                <div class="card-footer bg-transparent border-0">
+                    <a href="{% url 'transfer_list' %}" class="text-dark text-decoration-none">View Details <i class="bi bi-arrow-right"></i></a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Low Stock Alert -->
+    {% if low_stock_count > 0 %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="alert alert-danger">
+                <h5><i class="bi bi-exclamation-triangle"></i> Low Stock Alert</h5>
+                <p>{{ low_stock_count }} product(s) are running low on stock (below 10 units)</p>
+                {% if low_stock_items %}
+                <ul class="mb-0">
+                    {% for stock in low_stock_items %}
+                    <li>{{ stock.product.name }} - {{ stock.warehouse }}: {{ stock.quantity }} units</li>
+                    {% endfor %}
+                </ul>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    
+    <!-- Recent Activities -->
+    <div class="row">
+        {% if recent_invoices %}
+        <div class="col-md-6 mb-3">
+            <div class="card">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="bi bi-receipt"></i> Recent Invoices</h5>
+                </div>
+                <div class="card-body">
+                    <div class="list-group list-group-flush">
+                        {% for invoice in recent_invoices %}
+                        <a href="{% url 'invoice_detail' invoice.pk %}" class="list-group-item list-group-item-action">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h6 class="mb-1">{{ invoice.invoice_number }}</h6>
+                                <small>${{ invoice.total_amount|floatformat:2 }}</small>
+                            </div>
+                            <p class="mb-1 text-muted">{{ invoice.customer.name }}</p>
+                            <small>{{ invoice.date }}</small>
+                        </a>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        
+        {% if recent_transfers %}
+        <div class="col-md-6 mb-3">
+            <div class="card">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="bi bi-arrow-left-right"></i> Recent Transfers</h5>
+                </div>
+                <div class="card-body">
+                    <div class="list-group list-group-flush">
+                        {% for transfer in recent_transfers %}
+                        <div class="list-group-item">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h6 class="mb-1">{{ transfer.product.name }}</h6>
+                                <span class="badge bg-{{ transfer.status|default:'secondary' }}">{{ transfer.get_status_display }}</span>
+                            </div>
+                            <p class="mb-1 text-muted">{{ transfer.from_warehouse }} → {{ transfer.to_warehouse }}</p>
+                            <small>Quantity: {{ transfer.quantity }} | {{ transfer.created_at|date:"M d, Y" }}</small>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        
+        {% if monthly_revenue %}
+        <div class="col-md-6 mb-3">
+            <div class="card">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="bi bi-graph-up"></i> Monthly Revenue</h5>
+                </div>
+                <div class="card-body">
+                    <h2 class="text-success">${{ monthly_revenue|floatformat:2 }}</h2>
+                    <p class="text-muted">Current month</p>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

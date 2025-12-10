@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+
+{% block title %}Stock Levels - Smart Inventory System{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-3">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <h2><i class="bi bi-boxes"></i> Stock Levels</h2>
+                <div>
+                    <a href="{% url 'stock_entry_create' %}" class="btn btn-success me-2">
+                        <i class="bi bi-plus-lg"></i> Stock In (Purchase)
+                    </a>
+                    <a href="{% url 'stock_adjustment_create' %}" class="btn btn-warning me-2">
+                        <i class="bi bi-sliders"></i> Adjust Stock
+                    </a>
+                    <a href="{% url 'transfer_create' %}" class="btn btn-primary">
+                        <i class="bi bi-arrow-left-right"></i> Transfer Stock
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        {% for warehouse, stocks in warehouse_stocks.items %}
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">{{ warehouse|title }} Warehouse</h5>
+                    <span class="badge bg-light text-dark">{{ stocks|length }} Items</span>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-striped mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Product</th>
+                                    <th>SKU</th>
+                                    <th class="text-end">Quantity</th>
+                                    <th class="text-end">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for stock in stocks %}
+                                <tr>
+                                    <td>{{ stock.product.name }}</td>
+                                    <td><small class="text-muted">{{ stock.product.sku }}</small></td>
+                                    <td class="text-end font-monospace"><strong>{{ stock.quantity }}</strong></td>
+                                    <td class="text-end">
+                                        {% if stock.is_low_stock %}
+                                        <span class="badge bg-danger">Low Stock</span>
+                                        {% else %}
+                                        <span class="badge bg-success">OK</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12">
+            <div class="alert alert-info">
+                <i class="bi bi-info-circle"></i> No stock records found. Add stock to get started.
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

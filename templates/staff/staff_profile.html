@@ -1,0 +1,103 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ staff.user.get_full_name }} - Staff Profile{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-md-4 mb-3">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="bi bi-person-circle"></i> Profile</h5>
+                </div>
+                <div class="card-body">
+                    <h4>{{ staff.user.get_full_name|default:staff.user.username }}</h4>
+                    <p class="text-muted">{{ staff.user.email }}</p>
+                    <hr>
+                    <p><strong>Role:</strong> <span class="badge bg-info">{{ staff.get_role_display }}</span></p>
+                    <p><strong>Attendance:</strong> {{ staff.attendance_percentage }}%</p>
+                    <p><strong>Customer Satisfaction:</strong> {{ staff.customer_satisfaction }}%</p>
+                    {% if staff.hire_date %}
+                    <p><strong>Hire Date:</strong> {{ staff.hire_date|date:"M d, Y" }}</p>
+                    {% endif %}
+                    <p><strong>Total Bonuses:</strong> <span class="text-success">${{ total_bonuses|floatformat:2 }}</span></p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-8">
+            <!-- KPI History -->
+            <div class="card mb-3">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">KPI History</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Month</th>
+                                    <th>Sales</th>
+                                    <th>Target</th>
+                                    <th>Achievement</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for kpi in kpis %}
+                                <tr>
+                                    <td>{{ kpi.month|date:"F Y" }}</td>
+                                    <td>${{ kpi.sales_amount|floatformat:2 }}</td>
+                                    <td>${{ kpi.target_sales|floatformat:2 }}</td>
+                                    <td>
+                                        <span class="badge {% if kpi.is_target_met %}bg-success{% else %}bg-warning{% endif %}">
+                                            {{ kpi.achievement_percentage|floatformat:1 }}%
+                                        </span>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="4" class="text-center text-muted">No KPI history</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Bonus History -->
+            <div class="card">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">Bonus History</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Month</th>
+                                    <th>Amount</th>
+                                    <th>Reason</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for bonus in bonuses %}
+                                <tr>
+                                    <td>{{ bonus.month|date:"F Y" }}</td>
+                                    <td class="text-success">${{ bonus.amount|floatformat:2 }}</td>
+                                    <td>{{ bonus.reason|default:"—" }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="3" class="text-center text-muted">No bonuses awarded</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

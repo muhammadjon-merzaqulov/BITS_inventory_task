@@ -1,0 +1,196 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }} - Smart Inventory System{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0"><i class="bi bi-receipt"></i> {{ title }}</h4>
+                </div>
+                <div class="card-body">
+                    <form method="post" id="invoice-form">
+                        {% csrf_token %}
+                        
+                        <!-- Invoice Header -->
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.customer.id_for_label }}" class="form-label">Customer *</label>
+                                {{ form.customer }}
+                                {% if form.customer.errors %}
+                                <div class="text-danger small">{{ form.customer.errors }}</div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-3 mb-3">
+                                <label for="{{ form.invoice_number.id_for_label }}" class="form-label">Invoice Number *</label>
+                                {{ form.invoice_number }}
+                                {% if form.invoice_number.errors %}
+                                <div class="text-danger small">{{ form.invoice_number.errors }}</div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-3 mb-3">
+                                <label for="{{ form.date.id_for_label }}" class="form-label">Date *</label>
+                                {{ form.date }}
+                                {% if form.date.errors %}
+                                <div class="text-danger small">{{ form.date.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <!-- Invoice Items -->
+                        <h5 class="mt-4 mb-3">Invoice Items</h5>
+                        
+                        {{ formset.management_form }}
+                        
+                        <div id="items-container">
+                            <div class="table-responsive">
+                                <table class="table table-bordered" id="items-table">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th style="width: 40%;">Product</th>
+                                            <th style="width: 15%;">Quantity</th>
+                                            <th style="width: 20%;">Price</th>
+                                            <th style="width: 20%;">Subtotal</th>
+                                            <th style="width: 5%;">Delete</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="items-tbody">
+                                        {% for item_form in formset %}
+                                        <tr class="item-row">
+                                            <td>
+                                                {{ item_form.id }}
+                                                {{ item_form.product }}
+                                                {% if item_form.product.errors %}
+                                                <div class="text-danger small">{{ item_form.product.errors }}</div>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {{ item_form.quantity }}
+                                                {% if item_form.quantity.errors %}
+                                                <div class="text-danger small">{{ item_form.quantity.errors }}</div>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {{ item_form.price }}
+                                                {% if item_form.price.errors %}
+                                                <div class="text-danger small">{{ item_form.price.errors }}</div>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <input type="text" class="form-control item-subtotal" readonly value="0.00">
+                                            </td>
+                                            <td class="text-center">
+                                                {{ item_form.DELETE }}
+                                                <label for="{{ item_form.DELETE.id_for_label }}" class="form-label">
+                                                    <i class="bi bi-trash text-danger"></i>
+                                                </label>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        
+                        <button type="button" class="btn btn-sm btn-success mb-3" id="add-item-btn">
+                            <i class="bi bi-plus-circle"></i> Add Another Item
+                        </button>
+                        
+                        <!-- Totals -->
+                        <div class="row mt-4">
+                            <div class="col-md-8"></div>
+                            <div class="col-md-4">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between mb-2">
+                                            <strong>Subtotal:</strong>
+                                            <span id="invoice-subtotal">$0.00</span>
+                                        </div>
+                                        <div class="d-flex justify-content-between mb-3">
+                                            <strong>Discount:</strong>
+                                            <div>
+                                                ${{ form.discount }}
+                                            </div>
+                                        </div>
+                                        <hr>
+                                        <div class="d-flex justify-content-between">
+                                            <h5><strong>Total:</strong></h5>
+                                            <h5 class="text-success"><strong id="invoice-total">$0.00</strong></h5>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        {% if form.discount.errors %}
+                        <div class="text-danger small mt-2">{{ form.discount.errors }}</div>
+                        {% endif %}
+                        
+                        <div class="d-flex justify-content-between mt-4">
+                            <a href="{% url 'invoice_list' %}" class="btn btn-secondary">
+                                <i class="bi bi-x-circle"></i> Cancel
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-save"></i> Save Invoice
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Calculate subtotals and total - will be enhanced by main.js
+document.addEventListener('DOMContentLoaded', function() {
+    calculateTotals();
+    
+    // Add event listeners for quantity and price changes
+    document.querySelectorAll('.item-quantity, .item-price').forEach(function(input) {
+        input.addEventListener('input', calculateTotals);
+    });
+    
+    // Add event listener for discount
+    const discountField = document.querySelector('input[name="discount"]');
+    if (discountField) {
+        discountField.addEventListener('input', calculateTotals);
+    }
+});
+
+function calculateTotals() {
+    let subtotal = 0;
+    
+    document.querySelectorAll('.item-row').forEach(function(row) {
+        const deleteCheckbox = row.querySelector('input[type="checkbox"][name$="-DELETE"]');
+        if (deleteCheckbox && deleteCheckbox.checked) {
+            return; // Skip deleted rows
+        }
+        
+        const quantity = parseFloat(row.querySelector('.item-quantity')?.value) || 0;
+        const price = parseFloat(row.querySelector('.item-price')?.value) || 0;
+        const itemSubtotal = quantity * price;
+        
+        const subtotalField = row.querySelector('.item-subtotal');
+        if (subtotalField) {
+            subtotalField.value = itemSubtotal.toFixed(2);
+        }
+        
+        subtotal += itemSubtotal;
+    });
+    
+    const discountField = document.querySelector('input[name="discount"]');
+    const discount = parseFloat(discountField?.value) || 0;
+    const total = subtotal - discount;
+    
+    document.getElementById('invoice-subtotal').textContent = '$' + subtotal.toFixed(2);
+    document.getElementById('invoice-total').textContent = '$' + total.toFixed(2);
+}
+</script>
+{% endblock %}

@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }} - Smart Inventory System{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card border-warning">
+                <div class="card-header bg-warning text-dark">
+                    <h4 class="mb-0"><i class="bi bi-sliders"></i> {{ title }}</h4>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle"></i> Use this form to record damaged goods, theft, or manual inventory corrections.
+                    </div>
+                    
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.product.id_for_label }}" class="form-label">Product *</label>
+                            {{ form.product }}
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.warehouse.id_for_label }}" class="form-label">Warehouse *</label>
+                            {{ form.warehouse }}
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.quantity.id_for_label }}" class="form-label">Quantity Adjustment *</label>
+                                {{ form.quantity }}
+                                <div class="form-text">Negative (-) to remove, Positive (+) to add.</div>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.reason.id_for_label }}" class="form-label">Reason *</label>
+                                {{ form.reason }}
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.note.id_for_label }}" class="form-label">Note</label>
+                            {{ form.note }}
+                        </div>
+                        
+                        <div class="d-flex justify-content-between mt-4">
+                            <a href="{% url 'stock_list' %}" class="btn btn-secondary">
+                                <i class="bi bi-x-circle"></i> Cancel
+                            </a>
+                            <button type="submit" class="btn btn-warning">
+                                <i class="bi bi-save"></i> Save Adjustment
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

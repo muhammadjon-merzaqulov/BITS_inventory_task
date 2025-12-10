@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+
+{% block title %}Stock Transfers - Smart Inventory System{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-3">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <h2><i class="bi bi-truck"></i> Stock Transfers</h2>
+                <a href="{% url 'transfer_create' %}" class="btn btn-primary">
+                    <i class="bi bi-plus-circle"></i> New Transfer
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Filter by Status -->
+    <div class="row mb-3">
+        <div class="col-md-4">
+            <select class="form-select" onchange="window.location.href='?status=' + this.value">
+                <option value="">All Statuses</option>
+                {% for code, name in status_choices %}
+                <option value="{{ code }}" {% if current_status == code %}selected{% endif %}>{{ name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Product</th>
+                                    <th>From</th>
+                                    <th>To</th>
+                                    <th>Quantity</th>
+                                    <th>Driver</th>
+                                    <th>Status</th>
+                                    <th>Created</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for transfer in transfers %}
+                                <tr>
+                                    <td><strong>#{{ transfer.id }}</strong></td>
+                                    <td>{{ transfer.product.name }}</td>
+                                    <td><span class="badge bg-secondary">{{ transfer.get_from_warehouse_display }}</span></td>
+                                    <td><span class="badge bg-secondary">{{ transfer.get_to_warehouse_display }}</span></td>
+                                    <td>{{ transfer.quantity }}</td>
+                                    <td>{{ transfer.driver|default:"—" }}</td>
+                                    <td>
+                                        {% if transfer.status == 'pending' %}
+                                        <span class="badge bg-warning text-dark">Pending</span>
+                                        {% elif transfer.status == 'approved' %}
+                                        <span class="badge bg-info">Approved</span>
+                                        {% elif transfer.status == 'in_transit' %}
+                                        <span class="badge bg-primary">In Transit</span>
+                                        {% elif transfer.status == 'received' %}
+                                        <span class="badge bg-success">Received</span>
+                                        {% elif transfer.status == 'reconciled' %}
+                                        <span class="badge bg-dark">Reconciled</span>
+                                        {% endif %}
+                                        {% if transfer.has_mismatch %}
+                                        <i class="bi bi-exclamation-triangle text-warning" title="Quantity mismatch"></i>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ transfer.created_at|date:"M d, Y" }}</td>
+                                    <td>
+                                        <a href="{% url 'transfer_update' transfer.pk %}" class="btn btn-sm btn-outline-primary">
+                                            <i class="bi bi-pencil"></i> Update
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="9" class="text-center text-muted">
+                                        <i class="bi bi-inbox"></i> No transfers found
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
